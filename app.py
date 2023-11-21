@@ -40,7 +40,7 @@ def add_user():
         if member == None:
             hashed_password = generate_password_hash(password)
             new_member = User(email=email,password=hashed_password)
-            db.session.add(member)
+            db.session.add(new_member)
             db.session.commit()
         redirect('/')
     
