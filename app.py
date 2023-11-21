@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from functions import Book, Member, Library
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -21,6 +21,7 @@ class BookModel(db.Model):
 class User(db.Model):
     email = db.Column(db.String(100), primary_key = True)
     password = db.Column(db.String(100))
+    is_admin = db.Column(db.Boolean, deafult=False)
 
 # Create tables in Database
 with app.app_context():
@@ -46,6 +47,23 @@ def add_user():
     
     return render_template('create_user.html')
     
+@app.route('/login', methods =['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.get(email)
+
+        if user and check_password_hash(user.password, password):
+            if user.is_admin:
+                return redirect('/admin')
+            else:
+                return redirect('/')
+        else:
+            pass    
+    
+    return render_template('login.html')
+
 
 @app.route('/add_book', methods =['GET','POST'])
 def add_book():
