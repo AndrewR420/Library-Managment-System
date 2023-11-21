@@ -26,6 +26,12 @@ class User(db.Model):
 # Create tables in Database
 with app.app_context():
     db.create_all()
+    admin_email = "admin@gmail.com"
+    admin_password = generate_password_hash("super_secret_password")
+    admin_user = User(email=admin_email,password=admin_password, is_admin=True)
+    db.session.add(admin_user)
+    db.session.commit()
+
 
 # homepage
 @app.route('/')
