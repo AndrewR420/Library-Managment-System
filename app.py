@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -8,10 +9,13 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydb.db'
 db = SQLAlchemy(app)
 
+# load book data
+df = pd.read_csv("static/books2.csv",sep=";", encoding='latin-1')
+
 # setup databse for books
 class BookModel(db.Model):
-    title = db.Column(db.String(100))
-    author = db.Column(db.String(100))
+    title = db.Column(db.String(100),unique=False)
+    author = db.Column(db.String(100),unique=False)
     isbn = db.Column(db.Integer(),primary_key=True)
 
     def __repr__(self):
@@ -36,6 +40,15 @@ with app.app_context():
     if not existing_admin:
         db.session.add(admin_user)
         db.session.commit()
+
+    # Load book data from CSV and add to database
+    for _, row in df.iterrows(): 
+        try:
+            book = BookModel(title=row['Book-Title'], author=row['Book-Author'], isbn=int(row['ISBN']))
+            db.session.merge(book)
+            db.session.commit()
+        except:
+            pass
 
 # homepage
 @app.route('/')
@@ -102,9 +115,23 @@ def remove_book():
         book = BookModel.query.get(isbn)
         db.session.delete(book)
         db.session.commit()
-        redirect('/')
+        redirect('/admin')
     
     return render_template('remove_book.html')
+
+# remove a user from the database
+@app.route('/remove_user', methods=['GET','POST'])
+def remove_user():
+    if request.method == 'POST':
+        email = request.form[email]
+
+        # remove user from the database
+        user = User.query.get(email)
+        db.session.delete(user)
+        db.session.commit()
+        redirect('/admin')
+    
+    return render_template('remove_user.html')
 
 if __name__ == "__main__":
     app.run(debug=True)
