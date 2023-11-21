@@ -21,7 +21,7 @@ class BookModel(db.Model):
 class User(db.Model):
     email = db.Column(db.String(100), primary_key = True)
     password = db.Column(db.String(100))
-    is_admin = db.Column(db.Boolean, deafult=False)
+    is_admin = db.Column(db.Boolean, default=False)
 
 # Create tables in Database
 with app.app_context():
