@@ -10,9 +10,9 @@ db = SQLAlchemy(app)
 
 # setup databse for books
 class BookModel(db.Model):
-    title = db.Column(db.String(100),primary_key=True)
+    title = db.Column(db.String(100))
     author = db.Column(db.String(100))
-    isbn = db.Column(db.Integer())
+    isbn = db.Column(db.Integer(),primary_key=True)
 
     def __repr__(self):
         return f"Book {self.title}"
@@ -26,12 +26,16 @@ class User(db.Model):
 # Create tables in Database
 with app.app_context():
     db.create_all()
+    # creating admin user
     admin_email = "admin@gmail.com"
     admin_password = generate_password_hash("super_secret_password")
     admin_user = User(email=admin_email,password=admin_password, is_admin=True)
-    db.session.add(admin_user)
-    db.session.commit()
 
+     # Check if an admin user already exists to avoid duplicates
+    existing_admin = User.query.get(admin_email)
+    if not existing_admin:
+        db.session.add(admin_user)
+        db.session.commit()
 
 # homepage
 @app.route('/')
@@ -92,15 +96,13 @@ def add_book():
 @app.route('/remove_book', methods=['GET','POST'])
 def remove_book():
     if request.method =='POST':
-        title=request.form['title']
-        author = request.form['author']
         isbn = request.form['isbn']
 
         # remove book from database
-        book = BookModel.query.get(title,author,isbn)
+        book = BookModel.query.get(isbn)
         db.session.delete(book)
         db.session.commit()
-        redirect('/admin')
+        redirect('/')
     
     return render_template('remove_book.html')
 
