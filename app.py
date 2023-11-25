@@ -64,7 +64,12 @@ with app.app_context():
 # homepage
 @app.route('/')
 def homepage():
-    return render_template('homepage.html')
+    return render_template('index.html')
+
+# admin page
+@app.route('/admin')
+def admin():
+    return render_template('admin.html')
 
 # create user page
 @app.route('/create_user', methods = ['GET', 'POST'])
@@ -99,6 +104,31 @@ def login():
             pass    
     
     return render_template('login.html')
+
+# checkout books
+@app.route('/checkout_book/<int:isbn>', methods=['GET','POST'])
+def checkout_book(isbn):
+    if 'user.id' not in session: # if user is not logged in redirect to login page
+        redirect('login')
+    else:
+        user_email = session['user.id']
+        new_checkout = Checkout(user_email=user_email, isbn=isbn)
+        db.session.add(new_checkout)
+        db.session.commit()
+        redirect('/')
+
+    return render_template('Checkout.html')
+
+# return books
+@app.route('/return_book/<int:isbn>', methods=['GET','POST'])
+def return_book(isbn):
+    if 'user.id' not in session:
+        redirect('/')
+    else:
+        Checkout.query.filter_by(isbn=isbn, user_email=session['user.id']).delete()
+        db.session.commit()
+        redirect('/')
+
 
 # adding books to the database
 @app.route('/add_book', methods =['GET','POST'])

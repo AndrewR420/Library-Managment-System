@@ -1,0 +1,28 @@
+User
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="static/basic.css">
+    <title>Library Homepage</title>
+</head>
+<body>
+    <header>
+        <hr>
+        <h1>Welcome to our Library!</h1>
+        <nav>
+            <a href="/" style="color: blue; text-decoration: none;">Home</a>
+            <a href="">Checkout Book</a>
+            <a href="">Return Book</a>
+            <a href="/login">Log In</a>
+        </nav>
+    </header>
+    <hr>
+    <section>
+        <h2>Search for Books</h2>
+        <form action="/search_books" method="post">
+            <input type="text" name="search_query" placeholder="Search books...">
+            <input type="submit" value="Search">
+        </form>
+    </section>
+</body>
+</html>
