@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect,session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -19,13 +20,23 @@ class BookModel(db.Model):
     isbn = db.Column(db.Integer(),primary_key=True)
 
     def __repr__(self):
-        return f"Book {self.title}"
+        return f"Book:{self.title},{self.author},ISBN:{self.isbn}"
 
 # setup database for to store users
 class User(db.Model):
     email = db.Column(db.String(100), primary_key = True)
     password = db.Column(db.String(100))
     is_admin = db.Column(db.Boolean, default=False)
+
+# setup database that stores books checkedout by users
+class Checkout(db.Model):
+    id = db.Column(db.Integer(),primary_key=True)
+    user_email = db.Column(db.String(100),db.ForeignKey('user.email'))
+    isbn = db.Column(db.Integer(),db.ForeignKey('book_model.isbn'))
+    checkout_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"Checkout:{self.user_email} - {self.isbn}"
 
 # Create tables in Database
 with app.app_context():
