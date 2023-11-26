@@ -73,7 +73,9 @@ def homepage():
 def admin():
     if 'user_id' is not session:
         return redirect('/login')
-    return render_template('admin.html')
+    else:
+        return render_template('admin.html')
+
 
 # search for books
 @app.route('/search_books', methods=['GET','POST'])
