@@ -100,3 +100,20 @@ input[type="submit"] {
 input[type="submit"]:hover {
     background-color: #00796b;
 }
+
+.flash {
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    color: #333;
+}
+
+.flash.info {
+    background-color: #e7f3fe;
+    border-color: #8ed9f6;
+}
+
+.flash.success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
