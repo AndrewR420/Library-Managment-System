@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'SUPERSECRET'
 
 # Setup app to use SQLAlchemy database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydb.db'
@@ -75,7 +76,7 @@ def admin():
 @app.route('/search_books', methods=['GET','POST'])
 def search_books():
     if request.method == 'POST':
-        search_query = request.form['seach_query']
+        search_query = request.form['search_query']
         # search books in database
         books = BookModel.query.filter(
             BookModel.title.contains(search_query) |
@@ -111,6 +112,7 @@ def login():
         user = User.query.get(email)
 
         if user and check_password_hash(user.password, password):
+            session['user_id']= user.email
             if user.is_admin: # if admin redirect to admin page
                 return redirect('/admin')
             else:
@@ -123,16 +125,15 @@ def login():
 # checkout books
 @app.route('/checkout_book/<int:isbn>', methods=['GET','POST'])
 def checkout_book(isbn):
-    if 'user.id' not in session: # if user is not logged in redirect to login page
-        redirect('login')
+    if 'user_id' not in session: # if user is not logged in redirect to login page
+        return redirect('/login')
     else:
         user_email = session['user.id']
         new_checkout = Checkout(user_email=user_email, isbn=isbn)
         db.session.add(new_checkout)
         db.session.commit()
-        redirect('/')
+        return redirect('/')
 
-    return render_template('Checkout.html')
 
 # return books
 @app.route('/return_book/<int:isbn>', methods=['GET','POST'])

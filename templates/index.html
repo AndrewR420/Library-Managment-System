@@ -10,8 +10,8 @@
         <h1>Welcome to our Library!</h1>
         <nav>
             <a href="/" style="color: blue; text-decoration: none;">Home</a>
-            <a href="/checkout_book">Checkout Book</a>
             <a href="/return_book">Return Book</a>
+            <a href="/create_user">Create Account</a>
             <a href="/login">Log In</a>
         </nav>
     </header>
@@ -29,8 +29,12 @@
                 <h3>Search Results:</h3>
                 <ul>
                     {% for book in books %}
-                        <li>{{ book.title }} by {{ book.author }} (ISBN: {{ book.isbn }})</li>
-                    {% endfor %}
+                    <li>
+                        {{ book.title }} by {{ book.author }} (ISBN: {{ book.isbn }})
+                        <!-- Checkout Link -->
+                        <a href="/checkout_book/{{ book.isbn }}">Checkout</a>
+                    </li>
+                {% endfor %}
                 </ul>
             </div>
         {% elif request.method == 'POST' %}
