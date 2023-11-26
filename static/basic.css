@@ -118,9 +118,13 @@ input[type="submit"]:hover {
     border-color: #c3e6cb;
 }
 
+.flash.error {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}
 
 a, a:visited {
-    color: rgb(255, 255, 255);
+    color: rgb(8, 16, 240);
     text-decoration: none;
 }
 

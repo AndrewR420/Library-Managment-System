@@ -71,10 +71,7 @@ def homepage():
 # admin page
 @app.route('/admin')
 def admin():
-    if 'user_id' is not session:
-        return redirect('/login')
-    else:
-        return render_template('admin.html')
+     return render_template('admin.html')
 
 
 # search for books
@@ -104,8 +101,9 @@ def add_user():
             new_member = User(email=email,password=hashed_password)
             db.session.add(new_member)
             db.session.commit()
-        redirect('/')
-    
+            flash("Account created successfully!", "success")
+        return redirect('/')
+
     return render_template('create_user.html')
 
  # login page and hashing password    
@@ -139,7 +137,7 @@ def checkout_book(isbn):
     if 'user_id' not in session: 
         return redirect('/login')
     else:
-        user_email = session['user.id']
+        user_email = session['user_id']
         new_checkout = Checkout(user_email=user_email, isbn=isbn)
         db.session.add(new_checkout)
         db.session.commit()
@@ -161,6 +159,9 @@ def return_book(isbn):
 # adding books to the database
 @app.route('/add_book', methods =['GET','POST'])
 def add_book():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
     if request.method == 'POST':
         title = request.form['title']
         author = request.form['author']
@@ -170,7 +171,7 @@ def add_book():
         new_book = BookModel(title=title,author=author,isbn=isbn)
         db.session.add(new_book)
         db.session.commit()
-        redirect('/admin')
+        flash("Book added successfully!","success")
 
     return render_template('add_book.html')
 
@@ -180,25 +181,40 @@ def remove_book():
     if request.method =='POST':
         isbn = request.form['isbn']
 
-        # remove book from database
-        book = BookModel.query.get(isbn)
-        db.session.delete(book)
-        db.session.commit()
-        redirect('/admin')
-    
+        try:
+            # remove book from database
+            book = BookModel.query.get(isbn)
+            if book:
+                db.session.delete(book)
+                db.session.commit()
+                flash("Book removed successfully!", "success")
+            else:
+                flash("Please enter a valid ISBN!","error")
+        except:
+            flash("An error has occured!","error")
+        
     return render_template('remove_book.html')
 
 # remove a user from the database
 @app.route('/remove_user', methods=['GET','POST'])
 def remove_user():
-    if request.method == 'POST':
-        email = request.form[email]
+    if 'user_id' not in session:
+        return redirect('/login')
 
-        # remove user from the database
-        user = User.query.get(email)
-        db.session.delete(user)
-        db.session.commit()
-        redirect('/admin')
+    if request.method == 'POST':
+        email = request.form['email']
+
+        try:
+            # remove user from the database
+            user = User.query.get(email)
+            if user:
+                db.session.delete(user)
+                db.session.commit()
+                flash("User removed successfully!","success")
+            else:
+                flash("Invalid user! Try again!", "error")
+        except:
+            flash("An error has occurred!", "error")
     
     return render_template('remove_user.html')
 

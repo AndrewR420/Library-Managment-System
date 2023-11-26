@@ -17,13 +17,13 @@
         <h1>Welcome to our Library!</h1>
         <nav>
             <a href="/" style="color: rgb(255, 255, 255); text-decoration: none;">Home</a>
-            <a href="/return_book">Return Book</a>
+            <a href="/return_book" style="color: white;">Return Book</a>
             {% if session.user_id %}
-                <a href="/logout">Log Out</a>
-                <span>Logged in as: {{ session.user_id }}</span>
+            <span style="font-size: smaller;">Logged in as: {{ session.user_id }}</span>
+                <a href="/logout" style="color: white;">Log Out</a>
             {% else %}
-                <a href="/create_user">Create Account</a>
-                <a href="/login">Log In</a>
+                <a href="/create_user" style="color: white;">Create Account</a>
+                <a href="/login" style="color: white;">Log In</a>
             {% endif %}
         </nav>
     </header>
