@@ -1,4 +1,3 @@
-User
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,8 +10,8 @@ User
         <h1>Welcome to our Library!</h1>
         <nav>
             <a href="/" style="color: blue; text-decoration: none;">Home</a>
-            <a href="">Checkout Book</a>
-            <a href="">Return Book</a>
+            <a href="/checkout_book">Checkout Book</a>
+            <a href="/return_book">Return Book</a>
             <a href="/login">Log In</a>
         </nav>
     </header>
@@ -23,6 +22,20 @@ User
             <input type="text" name="search_query" placeholder="Search books...">
             <input type="submit" value="Search">
         </form>
+
+        <!-- Return search results -->
+        {% if books %}
+            <div>
+                <h3>Search Results:</h3>
+                <ul>
+                    {% for book in books %}
+                        <li>{{ book.title }} by {{ book.author }} (ISBN: {{ book.isbn }})</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% elif request.method == 'POST' %}
+            <p>No books found.</p>
+        {% endif %}
     </section>
 </body>
 </html>

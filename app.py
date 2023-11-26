@@ -71,6 +71,21 @@ def homepage():
 def admin():
     return render_template('admin.html')
 
+# search for books
+@app.route('/search_books', methods=['GET','POST'])
+def search_books():
+    if request.method == 'POST':
+        search_query = request.form['seach_query']
+        # search books in database
+        books = BookModel.query.filter(
+            BookModel.title.contains(search_query) |
+            BookModel.author.contains(search_query)|
+            BookModel.isbn.contains(search_query)
+        ).all()
+    
+    return render_template('index.html', books=books)
+
+
 # create user page
 @app.route('/create_user', methods = ['GET', 'POST'])
 def add_user():
