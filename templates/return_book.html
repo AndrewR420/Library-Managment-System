@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='basic.css') }}">
+    <title>Return Books</title>
+</head>
+<body>
+    <header>
+        <h1>Return Checked Out Books</h1>
+        <nav>
+            <a href="{{ url_for('homepage') }}">Home</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </header>
+
+    <section>
+        <h2>Books You've Checked Out</h2>
+        {% if checked_out_books %}
+            <ul>
+                {% for checkout, book in checked_out_books %}
+                    <li>
+                        {{ book.title }} by {{ book.author }} (ISBN: {{ book.isbn }})
+                        <form action="{{ url_for('return_book') }}" method="post">
+                            <input type="hidden" name="isbn" value="{{ book.isbn }}">
+                            <button type="submit">Return</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You currently have no books checked out.</p>
+        {% endif %}
+    </section>
+
+    <footer>
+        <p>Library Management System</p>
+    </footer>
+</body>
+</html>

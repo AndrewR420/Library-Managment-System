@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect,session
+from flask import Flask, render_template, request, redirect,session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
@@ -123,6 +123,12 @@ def login():
     
     return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)  # Clear the user identifier from the session
+    return redirect(url_for('login'))
+
+
 # checkout books
 @app.route('/checkout_book/<int:isbn>', methods=['GET', 'POST'])
 def checkout_book(isbn):
@@ -144,14 +150,14 @@ def checkout_book(isbn):
 
 
 # return books
-@app.route('/return_book/<int:isbn>', methods=['GET','POST'])
+'''@app.route('/return_book/<int:isbn>', methods=['GET','POST'])
 def return_book(isbn):
     if 'user_id' not in session:
         redirect('/')
     else:
         Checkout.query.filter_by(isbn=isbn, user_email=session['user_id']).delete()
         db.session.commit()
-        redirect('/')
+        redirect('/')'''
 
 
 # adding books to the database
@@ -197,6 +203,28 @@ def remove_user():
         redirect('/admin')
     
     return render_template('remove_user.html')
+
+
+@app.route('/return_book', methods=['GET', 'POST'])
+def return_book():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    user_email = session['user_id']
+
+    if request.method == 'POST':
+        isbn_to_return = request.form.get('isbn')
+        Checkout.query.filter_by(isbn=isbn_to_return, user_email=user_email).delete()
+        db.session.commit()
+        flash("Book returned successfully!", "success")
+
+    # Fetch the books checked out by the user along with book details
+    checked_out_books = db.session.query(Checkout, BookModel).filter(Checkout.user_email == user_email).filter(Checkout.isbn == BookModel.isbn).all()
+
+    return render_template('return_book.html', checked_out_books=checked_out_books)
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
