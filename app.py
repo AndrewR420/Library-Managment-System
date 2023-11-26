@@ -141,6 +141,7 @@ def checkout_book(isbn):
         new_checkout = Checkout(user_email=user_email, isbn=isbn)
         db.session.add(new_checkout)
         db.session.commit()
+        flash("Book checkout succesfully!", "success")
         return redirect('/')
 
 
