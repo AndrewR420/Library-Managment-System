@@ -5,10 +5,21 @@
     <title>Library Login</title>
 </head>
 <body>
-    <head>Welcome to our Library
-        <a href="/" style="color: blue;">Home</a>
-    </head>
+    <header>
+        <h1>Welcome to our Library</h1>
+        <a href="/" style="color: rgb(255, 255, 255);">Home</a>
+    </header>
     <br>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <form action="/login" method="post">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required>

@@ -121,7 +121,7 @@ def login():
             else:
                 return redirect('/') # redirect to homepage
         else:
-            pass    
+            flash("Invalid email or password. Try again!","error")
     
     return render_template('login.html')
 
