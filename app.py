@@ -150,14 +150,23 @@ def checkout_book(isbn):
 
 
 # return books
-'''@app.route('/return_book/<int:isbn>', methods=['GET','POST'])
-def return_book(isbn):
+@app.route('/return_book', methods=['GET', 'POST'])
+def return_book():
     if 'user_id' not in session:
-        redirect('/')
-    else:
-        Checkout.query.filter_by(isbn=isbn, user_email=session['user_id']).delete()
+        return redirect('/login')
+
+    user_email = session['user_id']
+
+    if request.method == 'POST':
+        isbn_to_return = request.form.get('isbn')
+        Checkout.query.filter_by(isbn=isbn_to_return, user_email=user_email).delete()
         db.session.commit()
-        redirect('/')'''
+        flash("Book returned successfully!", "success")
+
+    # Fetch the books checked out by the user along with book details
+    checked_out_books = db.session.query(Checkout, BookModel).filter(Checkout.user_email == user_email).filter(Checkout.isbn == BookModel.isbn).all()
+
+    return render_template('return_book.html', checked_out_books=checked_out_books)
 
 
 # adding books to the database
@@ -203,25 +212,6 @@ def remove_user():
         redirect('/admin')
     
     return render_template('remove_user.html')
-
-
-@app.route('/return_book', methods=['GET', 'POST'])
-def return_book():
-    if 'user_id' not in session:
-        return redirect('/login')
-
-    user_email = session['user_id']
-
-    if request.method == 'POST':
-        isbn_to_return = request.form.get('isbn')
-        Checkout.query.filter_by(isbn=isbn_to_return, user_email=user_email).delete()
-        db.session.commit()
-        flash("Book returned successfully!", "success")
-
-    # Fetch the books checked out by the user along with book details
-    checked_out_books = db.session.query(Checkout, BookModel).filter(Checkout.user_email == user_email).filter(Checkout.isbn == BookModel.isbn).all()
-
-    return render_template('return_book.html', checked_out_books=checked_out_books)
 
 
 

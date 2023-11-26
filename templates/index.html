@@ -18,12 +18,11 @@
         <nav>
             <a href="/" style="color: blue; text-decoration: none;">Home</a>
             <a href="/return_book">Return Book</a>
-            <a href="/create_user">Create Account</a>
-            <a href="/login">Log In</a>
             {% if session.user_id %}
-                Logged in as: {{ session.user_id }}
                 <a href="/logout">Log Out</a>
+                <span>Logged in as: {{ session.user_id }}</span>
             {% else %}
+                <a href="/create_user">Create Account</a>
                 <a href="/login">Log In</a>
             {% endif %}
         </nav>
