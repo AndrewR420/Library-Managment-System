@@ -128,7 +128,7 @@ def checkout_book(isbn):
     if 'user_id' not in session: # if user is not logged in redirect to login page
         return redirect('/login')
     else:
-        user_email = session['user.id']
+        user_email = session['user_id']
         new_checkout = Checkout(user_email=user_email, isbn=isbn)
         db.session.add(new_checkout)
         db.session.commit()
