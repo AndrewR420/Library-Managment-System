@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 from datetime import datetime
+from flask import flash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'SUPERSECRET'
@@ -125,25 +126,26 @@ def login():
     return render_template('login.html')
 
 # checkout books
-@app.route('/checkout_book/<int:isbn>', methods=['GET','POST'])
+@app.route('/checkout_book/<int:isbn>', methods=['GET', 'POST'])
 def checkout_book(isbn):
-    if 'user_id' not in session: # if user is not logged in redirect to login page
+    if 'user_id' not in session: 
         return redirect('/login')
     else:
-        user_email = session['user_id']
+        user_email = session['user.id']
         new_checkout = Checkout(user_email=user_email, isbn=isbn)
         db.session.add(new_checkout)
         db.session.commit()
         return redirect('/')
 
 
+
 # return books
 @app.route('/return_book/<int:isbn>', methods=['GET','POST'])
 def return_book(isbn):
-    if 'user.id' not in session:
+    if 'user_id' not in session:
         redirect('/')
     else:
-        Checkout.query.filter_by(isbn=isbn, user_email=session['user.id']).delete()
+        Checkout.query.filter_by(isbn=isbn, user_email=session['user_id']).delete()
         db.session.commit()
         redirect('/')
 
