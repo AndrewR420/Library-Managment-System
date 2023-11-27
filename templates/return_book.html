@@ -20,6 +20,11 @@
                 {% for checkout, book in checked_out_books %}
                     <li>
                         {{ book.title }} by {{ book.author }} (ISBN: {{ book.isbn }})
+                        - Due on: {{ checkout.due_date.strftime("%Y-%m-%d") }}
+                        {% if checkout.is_overdue() %}
+                            <strong style="color: red;">Overdue!</strong>
+                            Late Fee: ${{ checkout.calculate_late_fee() }}
+                        {% endif %}
                         <form action="{{ url_for('return_book') }}" method="post">
                             <input type="hidden" name="isbn" value="{{ book.isbn }}">
                             <button type="submit">Return</button>

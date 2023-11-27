@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect,session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import flash
 
 app = Flask(__name__)
@@ -32,13 +32,25 @@ class User(db.Model):
 
 # setup database that stores books checkedout by users
 class Checkout(db.Model):
-    id = db.Column(db.Integer(),primary_key=True)
-    user_email = db.Column(db.String(100),db.ForeignKey('user.email'))
-    isbn = db.Column(db.Integer(),db.ForeignKey('book_model.isbn'))
+    id = db.Column(db.Integer, primary_key=True)
+    user_email = db.Column(db.String(100), db.ForeignKey('user.email'))
+    isbn = db.Column(db.Integer, db.ForeignKey('book_model.isbn'))
     checkout_date = db.Column(db.DateTime, default=datetime.utcnow)
+    due_date = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(days=14))  # default to 14 days from now
+    returned = db.Column(db.Boolean, default=False)
+    late_fee = db.Column(db.Float, default=0)
 
-    def __repr__(self):
-        return f"Checkout:{self.user_email} - {self.isbn}"
+    def is_overdue(self):
+        """Check if the book is overdue."""
+        return datetime.utcnow() > self.due_date if self.due_date else False
+
+    def calculate_late_fee(self, daily_fee=1):
+        """Calculate the late fee for an overdue book."""
+        if self.is_overdue():
+            overdue_days = (datetime.utcnow() - self.due_date).days
+            return overdue_days * daily_fee
+        return 0
+
 
 # Create tables in Database
 with app.app_context():
@@ -134,27 +146,27 @@ def logout():
 # checkout books
 @app.route('/checkout_book/<int:isbn>', methods=['GET', 'POST'])
 def checkout_book(isbn):
-    if 'user_id' not in session: 
+    if 'user_id' not in session:
         return redirect('/login')
+
+    user_email = session['user_id']
+    existing_checkout = Checkout.query.filter_by(user_email=user_email, isbn=isbn).first()
+
+    # Check if the book is already checked out
+    if existing_checkout:
+        flash("You have already checked out this book.", "info")
     else:
-        user_email = session['user_id']
-        new_checkout = Checkout(user_email=user_email, isbn=isbn)
+        # Set the due date for 14 days from now
+        due_date = datetime.utcnow() + timedelta(days=14)   ### to test the late_fee, change + sign to - so it sets it back 14 days
+
+        # Create a new checkout record
+        new_checkout = Checkout(user_email=user_email, isbn=isbn, due_date=due_date)
         db.session.add(new_checkout)
         db.session.commit()
-        flash("Book checkout succesfully!", "success")
-        return redirect('/')
+        flash("Book checked out successfully! Due back on " + due_date.strftime("%Y-%m-%d"), "success")
 
+    return redirect('/')
 
-
-# return books
-'''@app.route('/return_book/<int:isbn>', methods=['GET','POST'])
-def return_book(isbn):
-    if 'user_id' not in session:
-        redirect('/')
-    else:
-        Checkout.query.filter_by(isbn=isbn, user_email=session['user_id']).delete()
-        db.session.commit()
-        redirect('/')'''
 
 
 # adding books to the database
@@ -219,24 +231,39 @@ def remove_user():
     
     return render_template('remove_user.html')
 
-
+#return book
 @app.route('/return_book', methods=['GET', 'POST'])
 def return_book():
     if 'user_id' not in session:
         return redirect('/login')
 
     user_email = session['user_id']
+    late_fee_rate = 1.00  # Define the daily late fee rate
 
-    if request.method == 'POST':
+    if request.method == 'POST' and 'isbn' in request.form:
         isbn_to_return = request.form.get('isbn')
-        Checkout.query.filter_by(isbn=isbn_to_return, user_email=user_email).delete()
-        db.session.commit()
-        flash("Book returned successfully!", "success")
+        checkout_record = Checkout.query.filter_by(isbn=isbn_to_return, user_email=user_email).first()
+        
+        if checkout_record:
+            overdue_days = (datetime.utcnow() - checkout_record.due_date).days
+            if overdue_days > 0:
+                checkout_record.late_fee = max(0, overdue_days) * late_fee_rate
+                db.session.commit()  # Update the record with the late fee
+                flash(f"Your late fee was: ${checkout_record.late_fee}", "warning")
+            else:
+                flash("Book returned on time. No late fee!", "success")
 
-    # Fetch the books checked out by the user along with book details
-    checked_out_books = db.session.query(Checkout, BookModel).filter(Checkout.user_email == user_email).filter(Checkout.isbn == BookModel.isbn).all()
+            db.session.delete(checkout_record)
+            db.session.commit()
 
-    return render_template('return_book.html', checked_out_books=checked_out_books)
+    checked_out_books = db.session.query(Checkout, BookModel).filter(
+        Checkout.user_email == user_email).filter(
+        Checkout.isbn == BookModel.isbn).all()
+
+    return render_template('return_book.html', checked_out_books=checked_out_books, current_date=datetime.utcnow())
+
+
+
 
 
 
