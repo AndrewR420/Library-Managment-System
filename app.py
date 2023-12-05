@@ -191,6 +191,9 @@ def add_book():
 # remove a book from the database
 @app.route('/remove_book', methods=['GET','POST'])
 def remove_book():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
     if request.method =='POST':
         isbn = request.form['isbn']
 
